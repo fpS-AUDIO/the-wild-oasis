@@ -2,6 +2,7 @@ import styled from "styled-components";
 import { formatCurrency } from "../../utils/helpers";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { deleteCabin } from "../../services/apiCabins";
+import toast from "react-hot-toast";
 
 const TableRow = styled.div`
   display: grid;
@@ -66,6 +67,8 @@ function CabinRow({ cabin }) {
 
     // this tell React Query what to do as soon as the mutation was successful
     onSuccess: function () {
+      toast.success("Cabin succeffully deleted");
+
       // to update the UI just refetch the data
       // to easly refetch the data in React Query you can just invalidate the cache
       // you need to call 'invalidateQueries()' on the 'QueryClient' returned from 'new QueryClient({...})' in App.js
@@ -80,7 +83,7 @@ function CabinRow({ cabin }) {
     onError: function (err) {
       // this error handler recieve the error thrown inside the deleteCabin() function
       // do something with this error
-      alert(err.message);
+      toast.error(err.message);
     },
   });
 
