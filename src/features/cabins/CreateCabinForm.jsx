@@ -6,6 +6,9 @@ import Button from "../../ui/Button";
 import FileInput from "../../ui/FileInput";
 import Textarea from "../../ui/Textarea";
 import { useForm } from "react-hook-form";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { createCabin } from "../../services/apiCabins";
+import toast from "react-hot-toast";
 
 const FormRow = styled.div`
   display: grid;
@@ -49,10 +52,33 @@ function CreateCabinForm() {
   //      register() works like this: {...register("id")}
   // 2.   Add the to <Form/>  handleSubmit()
   //      handleSubmit() should be called with your own handle submit custom function
-  const { register, handleSubmit } = useForm();
+  const { register, handleSubmit, reset } = useForm();
+
+  // get access to client
+  const queryClient = useQueryClient();
+
+  // useMutation to update remote state with React Query
+  const { mutate, isLoading: isLoadingCreating } = useMutation({
+    mutationFn: createCabin,
+    onSuccess: () => {
+      toast.success("New cabin is created");
+
+      // invalidate data so the parent component will refatch the data and show the update data
+      queryClient.invalidateQueries({
+        queryKey: ["cabins"],
+      });
+
+      // reset the form in the end of success
+      reset();
+    },
+
+    onError: (err) => {
+      toast.error(err.message);
+    },
+  });
 
   function onSubmit(formData) {
-    // console.log(formData); data of <Form/>`
+    mutate(formData);
   }
 
   return (
@@ -102,7 +128,7 @@ function CreateCabinForm() {
         <Button variation="secondary" type="reset">
           Cancel
         </Button>
-        <Button>Edit cabin</Button>
+        <Button disabled={isLoadingCreating}>Add cabin</Button>
       </FormRow>
     </Form>
   );

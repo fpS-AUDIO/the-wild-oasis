@@ -16,6 +16,22 @@ export async function getCabins() {
   return data;
 }
 
+export async function createCabin(newCabin) {
+  const { data, error } = await supabase
+    .from("cabins")
+    .insert([newCabin])
+    .select();
+
+  //   check for errors
+  if (error) {
+    console.log(error);
+    throw new Error(`Can't insert the new cabin...`);
+  }
+
+  //   if everything is ok return data
+  return data;
+}
+
 // REMEMBER to check the row level security rules
 export async function deleteCabin(id) {
   // code generated with Supabase API Docs
