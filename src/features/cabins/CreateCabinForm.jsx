@@ -9,42 +9,7 @@ import { useForm } from "react-hook-form";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createCabin } from "../../services/apiCabins";
 import toast from "react-hot-toast";
-
-const FormRow = styled.div`
-  display: grid;
-  align-items: center;
-  grid-template-columns: 24rem 1fr 1.2fr;
-  gap: 2.4rem;
-
-  padding: 1.2rem 0;
-
-  &:first-child {
-    padding-top: 0;
-  }
-
-  &:last-child {
-    padding-bottom: 0;
-  }
-
-  &:not(:last-child) {
-    border-bottom: 1px solid var(--color-grey-100);
-  }
-
-  &:has(button) {
-    display: flex;
-    justify-content: flex-end;
-    gap: 1.2rem;
-  }
-`;
-
-const Label = styled.label`
-  font-weight: 500;
-`;
-
-const Error = styled.span`
-  font-size: 1.4rem;
-  color: var(--color-red-700);
-`;
+import FormRow from "../../ui/FormRow";
 
 function CreateCabinForm() {
   // useForm() hook is from react-hook-form library
@@ -52,7 +17,10 @@ function CreateCabinForm() {
   //      register() works like this: {...register("id")}
   // 2.   Add the to <Form/>  handleSubmit()
   //      handleSubmit() should be called with your own handle submit custom function
-  const { register, handleSubmit, reset } = useForm();
+  const { register, handleSubmit, reset, getValues, formState } = useForm();
+
+  // formState (from useForm() hook) contains all errors properties
+  const { errors } = formState;
 
   // get access to client
   const queryClient = useQueryClient();
@@ -81,45 +49,93 @@ function CreateCabinForm() {
     mutate(formData);
   }
 
+  // this error handler function recieves errors
+  function onError(errors) {
+    // console.log(errors);
+    return;
+  }
+
+  // If there is an error during submitting the form the 'handleSubmit' won't call the 'onSubmit'
+  // but it will call the error hander function wi pass a seconda argument which we called 'onError'
+
   return (
-    <Form onSubmit={handleSubmit(onSubmit)}>
-      <FormRow>
-        <Label htmlFor="name">Cabin name</Label>
-        <Input type="text" id="name" {...register("name")} />
+    <Form onSubmit={handleSubmit(onSubmit, onError)}>
+      <FormRow label="Cabin name" error={errors?.name?.message}>
+        {/* 'register' function accepts and object as second argument for validation */}
+        <Input
+          type="text"
+          id="name"
+          disabled={isLoadingCreating}
+          {...register("name", {
+            required: "This field is required",
+            min: {
+              value: 1,
+              // message in case validation fails
+              message: "Capacity should be at least 1",
+            },
+          })}
+        />
       </FormRow>
 
-      <FormRow>
-        <Label htmlFor="maxCapacity">Maximum capacity</Label>
-        <Input type="number" id="maxCapacity" {...register("maxCapacity")} />
+      <FormRow label="Maximum capacity" error={errors?.maxCapacity?.message}>
+        <Input
+          type="number"
+          id="maxCapacity"
+          disabled={isLoadingCreating}
+          {...register("maxCapacity", {
+            required: "This field is required",
+          })}
+        />
       </FormRow>
 
-      <FormRow>
-        <Label htmlFor="regularPrice">Regular price</Label>
-        <Input type="number" id="regularPrice" {...register("regularPrice")} />
+      <FormRow label="Regular price" error={errors?.regularPrice?.message}>
+        <Input
+          type="number"
+          id="regularPrice"
+          disabled={isLoadingCreating}
+          {...register("regularPrice", {
+            required: "This field is required",
+          })}
+        />
       </FormRow>
 
-      <FormRow>
-        <Label htmlFor="discount">Discount</Label>
+      <FormRow label="Discount" error={errors?.name?.message}>
         <Input
           type="number"
           id="discount"
+          disabled={isLoadingCreating}
           defaultValue={0}
-          {...register("discount")}
+          {...register("discount", {
+            required: "This field is required",
+
+            // 'validate' accepts the custom callback validation function to validate the input field
+            // this callback takes an argument which is currently being input in the field
+            // if it returns true the field is validated
+
+            // 'getValues' (from useForm() hook) returns an object withh all the values from the form
+            validate: (currentValue) =>
+              currentValue > getValues().regularPrice ||
+              "Discount should be less that regular price",
+          })}
         />
       </FormRow>
 
-      <FormRow>
-        <Label htmlFor="description">Description for website</Label>
+      <FormRow
+        label="Description for website"
+        error={errors?.description?.message}
+      >
         <Textarea
           type="number"
           id="description"
+          disabled={isLoadingCreating}
           defaultValue=""
-          {...register("description")}
+          {...register("description", {
+            required: "This field is required",
+          })}
         />
       </FormRow>
 
-      <FormRow>
-        <Label htmlFor="image">Cabin photo</Label>
+      <FormRow label="Cabin photo" error={errors?.name?.message}>
         <FileInput id="image" accept="image/*" />
       </FormRow>
 
