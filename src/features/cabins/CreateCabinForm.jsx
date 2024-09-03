@@ -46,7 +46,12 @@ function CreateCabinForm() {
   });
 
   function onSubmit(formData) {
-    mutate(formData);
+    // console.log(formData);
+    mutate({
+      ...formData,
+
+      image: formData.image[0],
+    });
   }
 
   // this error handler function recieves errors
@@ -99,7 +104,7 @@ function CreateCabinForm() {
         />
       </FormRow>
 
-      <FormRow label="Discount" error={errors?.name?.message}>
+      <FormRow label="Discount" error={errors?.discount?.message}>
         <Input
           type="number"
           id="discount"
@@ -114,7 +119,7 @@ function CreateCabinForm() {
 
             // 'getValues' (from useForm() hook) returns an object withh all the values from the form
             validate: (currentValue) =>
-              currentValue > getValues().regularPrice ||
+              currentValue < getValues().regularPrice ||
               "Discount should be less that regular price",
           })}
         />
@@ -136,7 +141,14 @@ function CreateCabinForm() {
       </FormRow>
 
       <FormRow label="Cabin photo" error={errors?.name?.message}>
-        <FileInput id="image" accept="image/*" />
+        <FileInput
+          id="image"
+          accept="image/*"
+          // type="file" (fixed in styled component)
+          {...register("image", {
+            required: "This field is required",
+          })}
+        />
       </FormRow>
 
       <FormRow>
